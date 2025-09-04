@@ -9,12 +9,4 @@ sqlalchemy
 reportlab
 openpyxl
 requests
-fpdf
-
-streamlit          
-matplotlib         
-reportlab          
-pandas             
-numpy            
-sqlite3
-openpyxl
+fpdf==1.7.2
