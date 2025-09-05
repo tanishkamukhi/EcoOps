@@ -1,39 +1,46 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-from backend.carbon_calc import calculate_footprint
-from backend.suggestions import suggest_actions
-from backend.reporting import generate_report
-from backend.vendors import connect_vendor
+from backend.carbon_calc import calculate_travel_footprint
+from backend.suggestion_engine import get_suggestions
+from backend.vendor_api import plant_tree_api
+from frontend.charts import plot_footprint_chart
 
 def show_dashboard():
-    st.set_page_config(page_title="EcoOps – Sustainability Agent", layout="wide")
-    st.title("🌱 EcoOps – Automated Sustainability Agent")
-    st.markdown("Track your carbon footprint, get tips & generate report.")
+    st.title("🌍 EcoOps - Automated Sustainability Agent")
 
-    st.sidebar.header("Your Usage Details")
-    electricity = st.sidebar.number_input("Electricity (kWh)", 0.0)
-    water = st.sidebar.number_input("Water (Liters)", 0.0)
-    transport = st.sidebar.number_input("Transport (km)", 0.0)
+    # --- Travel Input Form ---
+    st.subheader("✈️ Travel Footprint Calculator")
+    distance = st.number_input("Enter travel distance (in km):", min_value=0.0, step=1.0)
+    mode = st.selectbox("Select mode of transport:", ["Car", "Bus", "Flight"])
 
-    if st.sidebar.button("Calculate"):
-        total, breakdown = calculate_footprint(electricity, water, transport)
-        st.subheader(f"Total CO₂ Emissions: **{total:.2f} kg**")
+    if "footprint" not in st.session_state:
+        st.session_state.footprint = None
+    if "plant_response" not in st.session_state:
+        st.session_state.plant_response = None
 
-        st.subheader("Breakup of Emissions")
-        fig, ax = plt.subplots()
-        ax.bar(breakdown.keys(), breakdown.values(), color=["#2ecc71", "#3498db", "#e74c3c"])
-        ax.set_ylabel("kg CO₂")
-        st.pyplot(fig)
+    if st.button("Calculate Footprint"):
+        st.session_state.footprint = calculate_travel_footprint(distance, mode)
+        st.session_state.plant_response = None  # reset tree response
 
-        st.subheader("Suggestions")
-        tips = suggest_actions(breakdown)
-        for t in tips:
-            st.write("-", t)
+    if st.session_state.footprint is not None:
+        footprint = st.session_state.footprint
+        st.success(f"✅ Your travel footprint: {footprint:.2f} kg CO₂")
 
-        if st.button("Generate Report"):
-            generate_report(total, breakdown, tips)
-            st.success("Report generated: `reports/sustainability_report.pdf`")
+        # Chart
+        plot_footprint_chart(footprint)
 
-        if st.button("Offset Carbon"):
-            resp = connect_vendor("tree_plantation", int(total // 10))
-            st.info(resp["message"])
+        # Suggestions
+        st.subheader("🌱 Eco-Friendly Suggestions")
+        tips = get_suggestions(footprint)
+        for tip in tips:
+            st.write(f"- {tip}")
+
+        # Vendor API (tree planting)
+        st.subheader("🌳 Offset Your Carbon Footprint")
+        trees = st.number_input("How many trees to plant?", min_value=1, step=1)
+        user_id = "demo_user"  # static user for now
+
+        if st.button("Plant Trees"):
+            st.session_state.plant_response = plant_tree_api(user_id, int(trees))
+
+        if st.session_state.plant_response:
+            st.json(st.session_state.plant_response)

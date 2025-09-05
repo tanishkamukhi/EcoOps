@@ -10,3 +10,4 @@ reportlab
 openpyxl
 requests
 fpdf==1.7.2
+requests
