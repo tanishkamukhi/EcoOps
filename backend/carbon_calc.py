@@ -9,4 +9,3 @@ def calculate_travel_footprint(distance_km, mode):
     mode = mode.lower()
 
     return distance_km * factors.get(mode, 0.0)
-

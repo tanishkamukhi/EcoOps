@@ -1,46 +1,70 @@
 import streamlit as st
-from backend.carbon_calc import calculate_travel_footprint
-from backend.suggestion_engine import get_suggestions
+import matplotlib.pyplot as plt
+from backend.offset_calc import calculate_offsets
 from backend.vendor_api import plant_tree_api
-from frontend.charts import plot_footprint_chart
+from backend.report_gen import generate_csv_report, generate_pdf_report
 
-def show_dashboard():
-    st.title("🌍 EcoOps - Automated Sustainability Agent")
+def show_dashboard(df):
+    st.header("🚗 Travel Footprint Calculator")
 
-    # --- Travel Input Form ---
-    st.subheader("✈️ Travel Footprint Calculator")
-    distance = st.number_input("Enter travel distance (in km):", min_value=0.0, step=1.0)
-    mode = st.selectbox("Select mode of transport:", ["Car", "Bus", "Flight"])
+    # User Inputs
+    user_id = st.text_input("Enter User ID", value="U001")
+    name = st.text_input("Enter Your Name", value="Demo User")
 
-    if "footprint" not in st.session_state:
-        st.session_state.footprint = None
-    if "plant_response" not in st.session_state:
-        st.session_state.plant_response = None
+    distance = st.number_input("Enter travel distance (in km)", min_value=0.0, step=10.0)
+    mode = st.selectbox("Select mode of transport", ["Car", "Bus", "Train", "Flight", "Bike"])
 
     if st.button("Calculate Footprint"):
-        st.session_state.footprint = calculate_travel_footprint(distance, mode)
-        st.session_state.plant_response = None  # reset tree response
+        emissions, trees_needed = calculate_offsets(distance, mode)
+        st.success(f"🌍 CO2 Emissions: {emissions:.2f} kg")
+        st.info(f"🌳 Trees required: {trees_needed}")
 
-    if st.session_state.footprint is not None:
-        footprint = st.session_state.footprint
-        st.success(f"✅ Your travel footprint: {footprint:.2f} kg CO₂")
+        # Save history
+        df.loc[len(df)] = {
+            "User ID": user_id,
+            "Name": name,
+            "Distance (km)": distance,
+            "Mode": mode,
+            "Emissions (kg CO2)": emissions,
+            "Trees": trees_needed
+        }
 
-        # Chart
-        plot_footprint_chart(footprint)
+    # Tree Planting Section
+    st.subheader("🌳 Offset Your Carbon Footprint")
+    trees = st.number_input("How many trees to plant?", min_value=1, step=1)
+    vendor = st.selectbox("Choose Vendor", ["EcoOps Demo Vendor", "Grow-Trees", "SankalpTaru"])
 
-        # Suggestions
-        st.subheader("🌱 Eco-Friendly Suggestions")
-        tips = get_suggestions(footprint)
-        for tip in tips:
-            st.write(f"- {tip}")
+    if st.button("Plant Trees"):
+        response = plant_tree_api(user_id=user_id, trees=trees, vendor=vendor)
+        st.write(f"Vendor Response: {response}")
 
-        # Vendor API (tree planting)
-        st.subheader("🌳 Offset Your Carbon Footprint")
-        trees = st.number_input("How many trees to plant?", min_value=1, step=1)
-        user_id = "demo_user"  # static user for now
+    # History Table
+    st.subheader("📊 Your Calculation History")
+    st.dataframe(df)
 
-        if st.button("Plant Trees"):
-            st.session_state.plant_response = plant_tree_api(user_id, int(trees))
+    # Chart
+    if not df.empty:
+        st.subheader("📈 Emissions Chart")
+        fig, ax = plt.subplots()
+        ax.bar(df["Mode"], df["Emissions (kg CO2)"], color="green")
+        ax.set_ylabel("Emissions (kg CO2)")
+        ax.set_xlabel("Mode of Transport")
+        ax.set_title("Carbon Emissions by Mode")
+        st.pyplot(fig)
 
-        if st.session_state.plant_response:
-            st.json(st.session_state.plant_response)
+    # Report Section
+    st.subheader("📝 Generate & Download Reports")
+
+    # CSV Report
+    if st.button("Generate CSV Report"):
+        filepath = generate_csv_report(df)
+        with open(filepath, "rb") as f:
+            st.download_button("⬇️ Download CSV", f, file_name=filepath, mime="text/csv")
+        st.success(f"✅ CSV Report generated: {filepath}")
+
+    # PDF Report
+    if st.button("Generate PDF Report"):
+        filepath = generate_pdf_report(df)
+        with open(filepath, "rb") as f:
+            st.download_button("⬇️ Download PDF", f, file_name=filepath, mime="application/pdf")
+        st.success(f"✅ PDF Report generated: {filepath}")

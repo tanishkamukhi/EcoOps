@@ -1,0 +1,6 @@
+User ID,Name,Distance (km),Mode,Emissions (kg CO2),Trees
+U001,Demo User,0.0,Car,0.0,1
+U001,Demo User,111111.0,Car,23333.309999999998,1072
+U001,Demo User,1000.0,Car,210.0,10
+U001,Demo User,1200.0,Car,252.0,12
+U001,Demo User,1200.0,Car,252.0,12

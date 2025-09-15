@@ -1,14 +1,18 @@
-import streamlit as st
 import matplotlib.pyplot as plt
 
-def plot_footprint_chart(footprint):
-    """Displays a simple pie chart of CO2 footprint vs target"""
-    target = 500  # example benchmark
+def plot_pie_chart(footprint):
     labels = ["Your Footprint", "Sustainable Target"]
-    values = [footprint, max(0, target - footprint)]
+    sizes = [footprint, max(1, footprint * 0.98)]  # Target ~98% of footprint
+    colors = ["#ff6666", "#66b3ff"]
 
     fig, ax = plt.subplots()
-    ax.pie(values, labels=labels, autopct="%1.1f%%", startangle=90)
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', colors=colors, startangle=90)
     ax.axis("equal")
+    return fig
 
-    st.pyplot(fig)
+def plot_bar_chart(df):
+    fig, ax = plt.subplots()
+    ax.bar(df["mode"], df["footprint"], color="green")
+    ax.set_ylabel("Carbon Footprint (kg CO₂)")
+    ax.set_title("Carbon Footprint by Travel Mode")
+    return fig
