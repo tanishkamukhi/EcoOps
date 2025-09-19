@@ -1,73 +1,56 @@
+from fpdf import FPDF
 import os
 import pandas as pd
-from fpdf import FPDF
-from datetime import datetime
 
-REPORT_DIR = "reports"
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, "EcoOps Sustainability Report", ln=True, align="C")
 
-# Ensure reports folder exists
-os.makedirs(REPORT_DIR, exist_ok=True)
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
-def cleanup_old_reports():
-    """Delete all old reports before generating new one."""
-    for file in os.listdir(REPORT_DIR):
-        file_path = os.path.join(REPORT_DIR, file)
-        try:
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-        except Exception as e:
-            print("⚠️ Error deleting file:", e)
-
-def generate_csv_report(df: pd.DataFrame):
-    """Generate and save CSV report, keeping only latest."""
-    cleanup_old_reports()  # delete old reports
-    filename = f"ecoops_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    filepath = os.path.join(REPORT_DIR, filename)
-    df.to_csv(filepath, index=False)
-    return filepath
-
-def generate_pdf_report(df: pd.DataFrame):
-    """Generate and save PDF report, keeping only latest."""
-    cleanup_old_reports()  # delete old reports
-    filename = f"ecoops_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-    filepath = os.path.join(REPORT_DIR, filename)
-
-    pdf = FPDF()
+def generate_pdf_report(df, filename="ecoops_report.pdf"):
+    pdf = PDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    pdf.cell(200, 10, txt="🌍 EcoOps Sustainability Report", ln=True, align="C")
-    pdf.ln(10)
+    pdf.cell(0, 10, "Detailed Report", ln=True, align="L")
+    pdf.ln(5)
 
-    # Table Header
-    for col in df.columns:
-        pdf.cell(40, 10, col, 1, 0, "C")
-    pdf.ln()
-
-    # Table Rows
+    # ✅ Handle dataframe rows safely
     for _, row in df.iterrows():
-        for item in row:
-            pdf.cell(40, 10, str(item), 1, 0, "C")
-        pdf.ln()
+        user = row.get("name", "Unknown")
+        dist = row.get("distance", 0)
+        mode = row.get("transport", "N/A")
+        tree = row.get("tree", "Not Provided")
 
+        pdf.multi_cell(
+            0, 10,
+            f"User: {user}\n"
+            f"Distance Travelled: {dist} km\n"
+            f"Mode of Transport: {mode}\n"
+            f"Tree Selected: {tree}\n"
+            
+            "-----------------------------------"
+        )
+        pdf.ln(2)
+
+    # ✅ Save file in project folder
+    filepath = os.path.join(os.getcwd(), filename)
     pdf.output(filepath)
+
     return filepath
+import pandas as pd
+import os
 from fpdf import FPDF
 
-class PDF(FPDF):
-    def __init__(self):
-        super().__init__()
-        self.add_page()
-        self.add_font("DejaVu", "", "DejaVuSans.ttf", uni=True)  # Unicode font
-        self.set_font("DejaVu", "", 12)
+# --- PDF Class & generate_pdf_report पहले जैसा रहेगा ---
 
-def generate_pdf_report(df):
-    pdf = PDF()
-    pdf.cell(0, 10, "EcoOps Report 🌍 - Tree Plantation", ln=True, align="C")
-
-    for i, row in df.iterrows():
-        pdf.cell(0, 10, f"Tree: {row['tree']}, Quantity: {row['quantity']}", ln=True)
-
-    filepath = "ecoops_report.pdf"
-    pdf.output(filepath)
+def generate_csv_report(df, filename="ecoops_report.csv"):
+    """Generate a CSV report from dataframe"""
+    filepath = os.path.join(os.getcwd(), filename)
+    df.to_csv(filepath, index=False)
     return filepath
