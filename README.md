@@ -64,6 +64,6 @@ Meet the amazing team behind **EcoOps**: 🚀
 
 | Name            | Role                                       | LinkedIn     |
 | --------------- | ------------------------------------------ | ------------ |
-| Tanishka Mukhi  | 👩‍💼 Project Lead & 🗂 Data Preprocessing    | [CONNECT](https://www.linkedin.com/in/tanishka-mukhi09/) |
+| Tanishka Mukhi  | 🗂 Data Preprocessing    | [CONNECT](https://www.linkedin.com/in/tanishka-mukhi09/) |
 | Rahul Manchanda | 💻 Backend Development & 🤖 Model Training| [CONNECT](https://www.linkedin.com/in/rahul-manchanda-3959b120a/) |
 | Mayank          | 🧪 Software Testing & ✅ Quality Assurance| [CONNECT](https://www.linkedin.com/in/mayank-bodgujar-b89497319/) |
