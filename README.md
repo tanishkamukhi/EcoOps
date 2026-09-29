@@ -62,8 +62,3 @@ With real-time analytics 📊, interactive dashboards 📈, and automated report
 ### 🌐 Connect with Me and My team
 Meet the amazing team behind **EcoOps**: 🚀
 
-| Name            | Role                                       | LinkedIn     |
-| --------------- | ------------------------------------------ | ------------ |
-| Tanishka Mukhi  | 🗂 Data Preprocessing    | [CONNECT](https://www.linkedin.com/in/tanishka-mukhi09/) |
-| Rahul Manchanda | 💻 Backend Development & 🤖 Model Training| [CONNECT](https://www.linkedin.com/in/rahul-manchanda-3959b120a/) |
-| Mayank          | 🧪 Software Testing & ✅ Quality Assurance| [CONNECT](https://www.linkedin.com/in/mayank-bodgujar-b89497319/) |
